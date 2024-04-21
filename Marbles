@@ -1,0 +1,85 @@
+#include <iostream>
+#include <sstream>
+#include <string>
+
+using namespace std;
+
+const int MAX_COLORS = 3; // Assuming maximum of 3 colors
+
+// Function to calculate the power of a game
+int calculatePower(const string& gameInput) {
+    stringstream ss(gameInput);
+    int maxCounts[MAX_COLORS] = {0}; // Array to store max counts of each color
+
+    string draw;
+    while (getline(ss, draw, ';')) {
+        stringstream drawSS(draw);
+        string marble;
+        while (getline(drawSS, marble, ',')) { // Split draw using comma
+            // Trim leading and trailing whitespaces
+            marble.erase(0, marble.find_first_not_of(" \t\r\n"));
+            marble.erase(marble.find_last_not_of(" \t\r\n") + 1);
+            // Find the position of the last space
+            size_t pos = marble.find_last_of(' ');
+            if (pos == string::npos) {
+                cerr << "Error: Invalid marble format \"" << marble << "\"\n";
+                continue; // Skip this marble if the format is invalid
+            }
+            // Extract the count string and color
+            string count_str = marble.substr(0, pos);
+            string color = marble.substr(pos + 1);
+
+            // Convert count_str to an integer
+            int count;
+            try {
+                count = stoi(count_str);
+            } catch (const invalid_argument& e) {
+                cerr << "Error: Invalid count string \"" << count_str << "\"\n";
+                continue; // Skip this marble if the count string is invalid
+            }
+
+            // Update max count for each color
+            if (color == "blue," || color == "blue") {
+                maxCounts[0] = max(maxCounts[0], count);
+            } else if (color == "yellow," || color == "yellow") {
+                maxCounts[1] = max(maxCounts[1], count);
+            } else if (color == "green," || color == "green") {
+                maxCounts[2] = max(maxCounts[2], count);
+            } else {
+                cerr << "Error: Unknown color \"" << color << "\"\n";
+            }
+        }
+    }
+
+    // Calculate the power of the game
+    int power = 1;
+    for (int i = 0; i < MAX_COLORS; ++i) {
+        power *= maxCounts[i];
+    }
+
+    return power;
+}
+
+int main() {
+    // Game inputs
+    string games[] = {
+        "Game 1: 2 blue, 4 yellow; 3 yellow, 2 green, 6 blue; 1 green",
+        "Game 2: 2 blue, 1 green; 3 green, 4 blue, 1 yellow; 1 green, 3 blue",
+        "Game 3: 3 green, 6 blue, 20 yellow; 5 blue, 6 yellow, 13 green; 5 green, 1 yellow",
+        "Game 4: 2 green, 3 yellow, 9 blue; 3 green, 9 yellow; 3 green, 15 blue, 14 yellow",
+        "Game 5: 6 yellow, 2 blue, 3 green; 2 blue, 3 yellow, 1 green"
+    };
+
+    int totalPower = 0;
+
+    // Calculate and store powers of all games
+    for (const string& game : games) {
+        int power = calculatePower(game);
+        totalPower += power;
+        cout << "Power of " << game.substr(0, game.find(':')) << ": " << power << endl;
+    }
+
+    cout << "Total Power of all games: " << totalPower << endl;
+
+    return 0;
+}
